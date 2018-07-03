@@ -7,10 +7,13 @@
 //
 
 #import "InterfaceController.h"
+#import <WatchConnectivity/WatchConnectivity.h>
+#import <WatchKit/WatchKit.h>
 
 
-@interface InterfaceController ()
-
+@interface InterfaceController () <WCSessionDelegate>
+@property (nonatomic, weak) IBOutlet WKInterfaceImage *image;
+@property (nonatomic, weak) IBOutlet WKInterfaceLabel *nameL;
 @end
 
 
@@ -19,18 +22,59 @@
 - (void)awakeWithContext:(id)context {
     [super awakeWithContext:context];
 
-    // Configure interface objects here.
 }
+
 
 - (void)willActivate {
-    // This method is called when watch view controller is about to be visible to user
     [super willActivate];
+    
+    WCSession *session = [WCSession defaultSession];
+    session.delegate = self;
+    [session activateSession];
 }
 
+
 - (void)didDeactivate {
-    // This method is called when watch view controller is no longer visible
     [super didDeactivate];
+    
 }
+
+
+
+#pragma mark === <WCSessionDelegate>
+- (void)session:(WCSession *)session didReceiveMessage:(NSDictionary<NSString *,id> *)message replyHandler:(void (^)(NSDictionary<NSString *,id> * _Nonnull))replyHandler
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self.image setImageNamed:message[@"image"]];
+        [self.nameL setText:message[@"name"]];
+        
+        [session sendMessage:@{@"result": @"OK!"} replyHandler:^(NSDictionary<NSString *,id> * _Nonnull replyMessage) {
+            
+        } errorHandler:^(NSError * _Nonnull error) {
+            
+        }];
+    });
+}
+//- (void)session:(WCSession *)session didReceiveMessage:(NSDictionary<NSString *,id> *)message
+//{
+//}
+
+- (void)session:(nonnull WCSession *)session activationDidCompleteWithState:(WCSessionActivationState)activationState error:(nullable NSError *)error
+{
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//
+////        [self.image setImageNamed:message[@"image"]];
+////        [self.nameL setText:message[@"name"]];
+//
+//        [session sendMessage:@{@"result": @"OK!"} replyHandler:^(NSDictionary<NSString *,id> * _Nonnull replyMessage) {
+//
+//        } errorHandler:^(NSError * _Nonnull error) {
+//
+//        }];
+//    });
+}
+
 
 @end
 
